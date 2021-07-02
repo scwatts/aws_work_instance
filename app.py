@@ -53,7 +53,7 @@ class EC2InstanceStack(cdk.Stack):
             aws_ec2.BlockDevice(
                 device_name='/dev/sdb',
                 volume=aws_ec2.BlockDeviceVolume.ebs(
-                    128,
+                    1024,
                     encrypted=True,
                     delete_on_termination=True,
                     volume_type=aws_ec2.EbsDeviceVolumeType.GP2,
@@ -98,5 +98,5 @@ stack = EC2InstanceStack(
     ),
 )
 cdk.Tags.of(stack).add('Creator', 'cdk')
-cdk.Tags.of(stack).add('Owner', 'scwatts')
+cdk.Tags.of(stack).add('Owner', 'swatts')
 app.synth()
