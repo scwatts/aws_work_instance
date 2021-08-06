@@ -1,22 +1,17 @@
 import setuptools
 
 
-with open("README.md") as fp:
-    long_description = fp.read()
-
-
 setuptools.setup(
     name="cdk_ec2",
     version="0.0.1",
 
     description="Simple EC2 instance stack",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
 
     author="author",
 
     install_requires=[
         "aws-cdk.core==1.110.1",
+        "aws-cdk.aws-ec2",
     ],
 
     python_requires=">=3.6",

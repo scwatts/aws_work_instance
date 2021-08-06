@@ -26,7 +26,7 @@ echo "alias conda-init='. /data/miniconda3/etc/profile.d/conda.sh'" >> /home/ec2
 rm Miniconda3-py39_4.9.2-Linux-x86_64.sh  Miniconda3-py39_4.9.2-Linux-x86_64.sh.sha256sum
 
 # Change owner to ec2-user
-chown -R /data/
+chown -R ec2-user /data/
 
 # Enable terminal vi mode
 echo 'set -o vi' >> /home/ec2-user/.bashrc

@@ -91,7 +91,7 @@ class EC2InstanceStack(cdk.Stack):
 app = cdk.App()
 stack = EC2InstanceStack(
     app,
-    'scwatts-work-ec2-instance',
+    'swatts-work-ec2-instance',
     env=cdk.Environment(
         account=os.getenv('CDK_DEFAULT_ACCOUNT'),
         region=os.getenv('CDK_DEFAULT_REGION')
