@@ -6,6 +6,7 @@ import pathlib
 from aws_cdk import (
     aws_ec2,
     aws_iam,
+    aws_s3,
     aws_s3_assets,
     core as cdk
 )
@@ -29,15 +30,30 @@ class EC2InstanceStack(cdk.Stack):
             'sg-0e4269cd9c7c1765a',
         )
         # Role
-        #   - enable SSM for interaction (AmazonSSMManagedInstanceCore)
-        #   - enable ro access for S3 buckets (AmazonS3ReadOnlyAccess)
-        #   - disable modification of defined role
-        role = aws_iam.Role.from_role_arn(
+        #   - SSM for interactive sessions (AmazonSSMManagedInstanceCore)
+        #   - ro on all S3 buckets (AmazonS3ReadOnlyAccess)
+        #   - grant rw on research data dev bucket for specific prefix
+        role = aws_iam.Role(
             self,
-            'S3roAndSSMRole',
-            'arn:aws:iam::843407916570:role/AmazonSSMRoleForInstancesQuickSetup',
-            mutable=False,
+            'InstanceRole',
+            role_name='WorkInstanceRole',
+            assumed_by=aws_iam.ServicePrincipal('ec2.amazonaws.com'),
+            managed_policies=[
+                aws_iam.ManagedPolicy.from_aws_managed_policy_name('AmazonSSMManagedInstanceCore'),
+                aws_iam.ManagedPolicy.from_aws_managed_policy_name('AmazonS3ReadOnlyAccess'),
+            ]
         )
+
+        umccr_temp_dev_bucket = aws_s3.Bucket.from_bucket_name(
+            self,
+            'UmccrTempDevBucket',
+            bucket_name='umccr-research-dev',
+        )
+        umccr_temp_dev_bucket.grant_read_write(
+            role,
+            objects_key_pattern='stephen/gpl_output/*'
+        )
+
         # Instance
         #  - machine image
         #  - attached block device
@@ -63,12 +79,20 @@ class EC2InstanceStack(cdk.Stack):
         instance = aws_ec2.Instance(
             self,
             'WorkInstance',
-            instance_type=aws_ec2.InstanceType('m5a.large'),
+            # 4 vCPUS; 30GB memory
+            instance_type=aws_ec2.InstanceType('r5a.xlarge'),
+            # 2 vCPUS; 8GB memory
+            #instance_type=aws_ec2.InstanceType('m5a.large'),
+            # 4 vCPUS; 16GB memory
+            #instance_type=aws_ec2.InstanceType('m5a.xlarge'),
             machine_image=machine_image,
             vpc=vpc,
             block_devices=block_devices,
             role=role,
             security_group=security_group,
+            vpc_subnets=aws_ec2.SubnetSelection(
+                subnet_type=aws_ec2.SubnetType.PUBLIC
+            )
         )
         # Instance config script
         #   - create Asset and attach to Instance object
