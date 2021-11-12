@@ -16,14 +16,16 @@ sudo sed -i 's#^\(OPTIONS=["'\'']\)#\1-g /data/docker/ #' /etc/sysconfig/docker
 sudo systemctl enable --now docker.service
 sudo usermod -aG docker ec2-user
 
-# Install Miniconda
+# Install Mambaforge
 # Download installer and run
-wget https://repo.anaconda.com/miniconda/Miniconda3-py39_4.9.2-Linux-x86_64.sh
-/bin/bash Miniconda3-py39_4.9.2-Linux-x86_64.sh -b -p /data/miniconda3/
+wget 'https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh'
+/bin/bash Mambaforge-Linux-x86_64.sh -b -p /data/mambaforge/
 # Create alias to pull conda into PATH
-echo "alias conda-init='. /data/miniconda3/etc/profile.d/conda.sh'" >> /home/ec2-user/.bashrc
+cat << EOF >> /home/ec2-user/.bashrc
+alias conda-init='eval "\$(/data/mambaforge/bin/conda shell.bash hook)"'
+EOF
 # Clean up
-rm Miniconda3-py39_4.9.2-Linux-x86_64.sh  Miniconda3-py39_4.9.2-Linux-x86_64.sh.sha256sum
+rm Mambaforge-Linux-x86_64.sh
 
 # Change owner to ec2-user
 chown -R ec2-user /data/
