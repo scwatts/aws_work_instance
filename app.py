@@ -32,7 +32,8 @@ class EC2InstanceStack(cdk.Stack):
         # Role
         #   - SSM for interactive sessions (AmazonSSMManagedInstanceCore)
         #   - ro on all S3 buckets (AmazonS3ReadOnlyAccess)
-        #   - grant rw on research data dev bucket for specific prefix
+        #   - allow ECR image download
+        #   - grant write for specific bucket but restrict to some key prefix
         role = aws_iam.Role(
             self,
             'InstanceRole',
@@ -44,6 +45,15 @@ class EC2InstanceStack(cdk.Stack):
             ]
         )
 
+        role.add_to_policy(
+            aws_iam.PolicyStatement(
+                actions=[
+                    'erc:GetDownloadUrlForLayer',
+                ],
+                resources=['*'],
+            )
+        )
+
         umccr_temp_dev_bucket = aws_s3.Bucket.from_bucket_name(
             self,
             'UmccrTempDevBucket',
@@ -51,7 +61,7 @@ class EC2InstanceStack(cdk.Stack):
         )
         umccr_temp_dev_bucket.grant_read_write(
             role,
-            objects_key_pattern='stephen/gpl_output/*'
+            objects_key_pattern='stephen/working/*'
         )
 
         # Instance
@@ -69,7 +79,7 @@ class EC2InstanceStack(cdk.Stack):
             aws_ec2.BlockDevice(
                 device_name='/dev/sdb',
                 volume=aws_ec2.BlockDeviceVolume.ebs(
-                    1024,
+                    1000,
                     encrypted=True,
                     delete_on_termination=True,
                     volume_type=aws_ec2.EbsDeviceVolumeType.GP2,
@@ -79,12 +89,21 @@ class EC2InstanceStack(cdk.Stack):
         instance = aws_ec2.Instance(
             self,
             'WorkInstance',
-            # 4 vCPUS; 30GB memory
-            instance_type=aws_ec2.InstanceType('r5a.xlarge'),
+            # 1 vCPUS; 1.7GB memory
+            #instance_type=aws_ec2.InstanceType('m1.small'),
+
             # 2 vCPUS; 8GB memory
             #instance_type=aws_ec2.InstanceType('m5a.large'),
+
+            # 2 vCPUS; 16GB memory
+            instance_type=aws_ec2.InstanceType('r5a.large'),
+
             # 4 vCPUS; 16GB memory
             #instance_type=aws_ec2.InstanceType('m5a.xlarge'),
+
+            # 4 vCPUS; 30GB memory
+            #instance_type=aws_ec2.InstanceType('r5a.xlarge'),
+
             machine_image=machine_image,
             vpc=vpc,
             block_devices=block_devices,
