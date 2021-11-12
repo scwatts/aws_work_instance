@@ -1,8 +1,8 @@
-Use launch template
+- Use launch template
     - this may improve time from ssm access to being usable/configured
     - meaning more time spent in init
 
-Wrap with script to allow:
+- Wrap with script to allow:
     - specification of resources
         - instance type
         - disk size
